@@ -1,20 +1,15 @@
 package main
 
 import (
-	"fmt"
-	"log"
-	"net/http"
-	"os"
-	"os/signal"
-	"regexp"
-	"strconv"
-	"strings"
-	"time"
 	"github.com/gin-gonic/gin"
-	"github.com/lamkuan/ping-json/internal/ping"
-	
+	//_ "github.com/lamkuan/ping-json/docs"
+	_ "github.com/lamkuan/ping-json/docs"
+	"github.com/lamkuan/ping-json/internal/controllers"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	"log"
+	"os"
+	"os/signal"
 )
 
 // @title Ping API 文档
@@ -28,7 +23,6 @@ import (
 
 // @host localhost:8080
 // @BasePath /
-
 func main() {
 	r := gin.Default()
 
@@ -58,68 +52,7 @@ func main() {
 			// @Success 200 {object} map[string]interface{}
 			// @Failure 400 {object} map[string]interface{}
 			// @Router /ping/{ip}/{params} [get]
-			pingAPI.GET("/:ip/*params", func(c *gin.Context) {
-				var err error
-
-				ip := c.Param("ip")
-				params := c.Param("params")
-				get_latency := c.Query("get_latency")
-
-				parts := strings.Split(strings.TrimPrefix(params, "/"), "/")
-				var countStr, timeoutStr string
-
-				if len(parts) > 0 {
-					countStr = parts[0]
-				}
-				if len(parts) > 1 {
-					timeoutStr = parts[1]
-				}
-
-				count := 5
-				if countStr != "" {
-					count, err = strconv.Atoi(countStr)
-					if err != nil {
-						c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid count parameter"})
-						return
-					}
-				}
-
-				timeout := 3600 * time.Second
-				if timeoutStr != "" {
-					x, err := strconv.Atoi(timeoutStr)
-					timeout = time.Duration(x)
-					if err != nil {
-						c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid timeout parameter"})
-						return
-					}
-				}
-
-				result, _ := ping.Ping(map[string]interface{}{"ip": ip, "count": count, "timeout": timeout})
-				var latencyList []string
-
-				if get_latency == "yes" {
-					re := regexp.MustCompile(`time=(\d+\.?\d*)`)
-					matches := re.FindAllStringSubmatch(result, -1)
-					latencyList = make([]string, 0, 1000)
-					if len(matches) > 0 {
-						for _, match := range matches {
-							latencyList = append(latencyList, fmt.Sprintf("%s\n", match[1]))
-						}
-					}
-
-					c.JSON(http.StatusOK, gin.H{
-						"result": result,
-						"status": http.StatusOK,
-						"times":  latencyList,
-					})
-					return
-				}
-
-				c.JSON(http.StatusOK, gin.H{
-					"result": result,
-					"status": http.StatusOK,
-				})
-			})
+			pingAPI.GET("/:ip/*params", controllers.Ping)
 		}
 	}
 

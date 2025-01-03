@@ -1,0 +1,46 @@
+basePath: /
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: 一个用于执行 ping 命令的示例 API。
+  termsOfService: http://swagger.io/terms/
+  title: Ping API 文档
+  version: "1.0"
+paths:
+  /ping/{ip}/{params}:
+    get:
+      description: Send an ICMP ping request to a specified IP address and retrieve
+        results, including latency if requested.
+      parameters:
+      - description: Target IP Address
+        in: path
+        name: ip
+        required: true
+        type: string
+      - description: 'Ping parameters in the format: {count}/{timeout}. Default count
+          is 5, and default timeout is 3600 seconds.'
+        in: path
+        name: params
+        type: string
+      - description: Specify 'yes' to include latency data in the response.
+        in: query
+        name: get_latency
+        type: string
+      responses:
+        "200":
+          description: Response with ping result and latency data (if requested)
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid parameters
+          schema:
+            additionalProperties: true
+            type: object
+      summary: ICMP Ping
+      tags:
+      - Ping
+swagger: "2.0"
